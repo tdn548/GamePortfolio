@@ -1,0 +1,178 @@
+﻿  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_tables.cpp
+  imgui_widgets.cpp
+  imgui_sdl.cpp
+  Agent.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  BigBlock.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\BigBlock.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  BigPig.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\BigPig.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  Button.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  CollisionManager.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Ground.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Ground.cpp(7,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  HalfPlane.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  ImGuiWindowFrame.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  LongBlock.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\LongBlock.cpp(13,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  MediumPig.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\MediumPig.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  NavigationObject.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Block.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Block.cpp(13,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  PhysicsEngine.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PhysicsEngine.cpp(167,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PhysicsEngine.cpp(252,78): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PhysicsEngine.cpp(251,124): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PhysicsEngine.cpp(255,79): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PhysicsEngine.cpp(254,125): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+  SmallPig.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\SmallPig.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  Generating Code...
+  Compiling...
+  Sprite.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  SquareBird.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\SquareBird.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  UIControl.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  DisplayObject.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  EndScene.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  FontManager.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Game.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  GameController.cpp
+  GameObject.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Label.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  PlayScene.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,28): warning C4838: conversion from 'double' to 'Uint8' requires a narrowing conversion
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,28): warning C4244: 'initializing': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,35): warning C4838: conversion from 'double' to 'Uint8' requires a narrowing conversion
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,35): warning C4244: 'initializing': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,42): warning C4838: conversion from 'double' to 'Uint8' requires a narrowing conversion
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,42): warning C4244: 'initializing': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,48): warning C4838: conversion from 'double' to 'Uint8' requires a narrowing conversion
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(256,48): warning C4244: 'initializing': conversion from 'double' to 'Uint8', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(271,41): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(273,44): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(279,47): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(281,50): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(287,48): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(293,49): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(299,45): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(300,42): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(306,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(312,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(318,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(324,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(330,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(336,49): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(342,46): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.cpp(349,46): warning C4305: '=': truncation from 'double' to 'float'
+  main.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Plane.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Bird.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Bird.cpp(11,29): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  Renderer.cpp
+  Scene.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Ship.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  SoundManager.cpp
+  EventManager.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  SpriteSheet.cpp
+  Generating Code...
+  Compiling...
+  StartScene.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Target.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+  TextureManager.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(22,37): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\PlayScene.h(75): warning C4305: 'initializing': truncation from 'double' to 'float'
+  Util.cpp
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(30): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\RigidBody.h(31): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Util.cpp(283,15): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Util.cpp(288,24): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Util.cpp(296,15): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\src\Util.cpp(301,14): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  Template.vcxproj -> C:\Users\sonth\game311\GamePortfolio\SDL 2D Physic Engine\bin\Debug\Template.exe
