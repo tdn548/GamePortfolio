@@ -1,0 +1,16 @@
+﻿  compilation object save succeeded; see C:\Users\sonth\game311\GAME3111_A2_Nguyen_QuirozMoreno\3D Graphic DX11\AdvanceGraphicsProgramming\x64\Debug\PS.cso
+  compilation object save succeeded; see C:\Users\sonth\game311\GAME3111_A2_Nguyen_QuirozMoreno\3D Graphic DX11\AdvanceGraphicsProgramming\x64\Debug\VS.cso
+  Camera.cpp
+  d3dApp.cpp
+  d3dUtil.cpp
+  DDSTextureLoader.cpp
+  GameTimer.cpp
+  GeometryGenerator.cpp
+  MathHelper.cpp
+  FrameResource.cpp
+  Waves.cpp
+  Week4-1-BoxUsingFrameResources.cpp
+C:\Users\sonth\game311\GAME3111_A2_Nguyen_QuirozMoreno\3D Graphic DX11\AdvanceGraphicsProgramming\AdvanceGraphicsProgramming\Week4-1-BoxUsingFrameResources.cpp(866,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\sonth\game311\GAME3111_A2_Nguyen_QuirozMoreno\3D Graphic DX11\AdvanceGraphicsProgramming\AdvanceGraphicsProgramming\Week4-1-BoxUsingFrameResources.cpp(873,14): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Generating Code...
+  AdvanceGraphicsProgramming.vcxproj -> C:\Users\sonth\game311\GAME3111_A2_Nguyen_QuirozMoreno\3D Graphic DX11\AdvanceGraphicsProgramming\x64\Debug\DirectXProjects.exe
