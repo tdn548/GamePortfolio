@@ -1,0 +1,4 @@
+Hammer-Move-0 1 1 17 17
+Hammer-Move-1 17 1 17 17
+Hammer-Move-2 34 1 17 17
+Hammer-Move-3 51 1 17 17
