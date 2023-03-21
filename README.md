@@ -5,7 +5,7 @@ This is the game porfolio by Thanh Nguyen.Code by C++/C# Unity and Unreal Engine
 2. Build Physic Engine by SDL C++
 - Build AABBAABB Collision
 - Build CircleAABB Collision
-- Circle Circle Collision
+- Build Circle Circle Collision
 - Object HalfPlane Collision
 - Slingshot, Gravity, Friction 
 
