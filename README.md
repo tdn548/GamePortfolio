@@ -3,7 +3,9 @@
 
 ### This is the game porfolio by Thanh Nguyen. Code by C++/C# Unity and Unreal Engine
 #### 1. A Maze Run game code by C++ and DX11
-- Using DX11 to build the texture, shader, lights in the game. Build castle, tree, waves; Build AABBAABB Collision among camera and items
+- Using DX11 to build the texture, shader, lights in the game.
+- Build castle, tree, waves
+- Build AABBAABB Collision among camera and items
 
 https://user-images.githubusercontent.com/53711944/231231040-34a64a22-c097-45b0-aff8-74a2585b6155.mov
 
