@@ -19,6 +19,7 @@
 #include "../../Common/MathHelper.h"
 #include "../../Common/UploadBuffer.h"
 #include "../../Common/GeometryGenerator.h"
+#include "../../Common/Camera.h"
 #include "FrameResource.h"
 #include "Waves.h"
 
@@ -31,6 +32,14 @@ using namespace DirectX::PackedVector;
 
 //step3: Our application class instantiates a vector of three frame resources, 
 const int gNumFrameResources = 3;
+
+struct RenderCollisionRectangles
+{
+	float posX;
+	float posZ;
+	float sizeX;
+	float sizeZ;
+};
 
 // Step10: Lightweight structure stores parameters to draw a shape.  This will vary from app-to-app.
 struct RenderItem
@@ -115,6 +124,12 @@ private:
 	void BuildRenderItems();
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
+	// Collision
+	std::list<RenderCollisionRectangles>rectangles;
+	void AABBAABBCollision(const GameTimer& gt);
+	float MinimumTranslationVector1D(const float centerA, const float radiusA, const float centerB, const float radiusB);
+	float Sign(const float value);
+
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
 
 private:
@@ -167,14 +182,7 @@ private:
 
 	bool mIsWireframe = false;
 
-	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
-	XMFLOAT4X4 mView = MathHelper::Identity4x4();
-	XMFLOAT4X4 mProj = MathHelper::Identity4x4();
-
-	float mTheta = 1.25f * XM_PI;
-	float mPhi = 0.3f * XM_PI;
-	float mRadius = 50.0f;
-
+	Camera mCamera;
 	POINT mLastMousePos;
 };
 
@@ -226,6 +234,8 @@ bool ShapesApp::Initialize()
 
 	mWaves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);
 
+	mCamera.SetPosition(0.0f, 4.5f, -53.0f);
+
 	LoadTextures();
 	BuildRootSignature();
 	BuildDescriptorHeaps();
@@ -253,9 +263,7 @@ void ShapesApp::OnResize()
 {
 	D3DApp::OnResize();
 
-	// The window resized, so update the aspect ratio and recompute the projection matrix.
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-	XMStoreFloat4x4(&mProj, P);
+	mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);;
 }
 
 //step7: for CPU frame n, the algorithm
@@ -287,6 +295,7 @@ void ShapesApp::Update(const GameTimer& gt)
 	UpdateMaterialCBs(gt);
 	UpdateMainPassCB(gt);
 	UpdateWaves(gt);
+	AABBAABBCollision(gt);
 }
 
 void ShapesApp::Draw(const GameTimer& gt)
@@ -367,68 +376,36 @@ void ShapesApp::OnMouseUp(WPARAM btnState, int x, int y)
 
 void ShapesApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if ((btnState & MK_LBUTTON) != 0)
-	{
-		// Make each pixel correspond to a quarter of a degree.
-		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
-
-		// Update angles based on input to orbit camera around box.
-		mTheta += dx;
-		mPhi += dy;
-
-		// Restrict the angle mPhi.
-		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
-	}
-	else if ((btnState & MK_RBUTTON) != 0)
-	{
-		// Make each pixel correspond to 0.2 unit in the scene.
-		float dx = 0.05f * static_cast<float>(x - mLastMousePos.x);
-		float dy = 0.05f * static_cast<float>(y - mLastMousePos.y);
-
-		// Update the camera radius based on input.
-		mRadius += dx - dy;
-
-		// Restrict the radius.
-		mRadius = MathHelper::Clamp(mRadius, 5.0f, 150.0f);
-	}
-
-	mLastMousePos.x = x;
-	mLastMousePos.y = y;
 }
 
 void ShapesApp::OnKeyboardInput(const GameTimer& gt)
 {
-	//! Determines whether a key is up or down at the time the function is called, and whether the key was pressed after a previous call to GetAsyncKeyState.
-	//! If the function succeeds, the return value specifies whether the key was pressed since the last call to GetAsyncKeyState, 
-	//! and whether the key is currently up or down. If the most significant bit is set, the key is down, and if the least significant bit is set, the key was pressed after the previous call to GetAsyncKeyState.
-	//! if (GetAsyncKeyState('1') & 0x8000) 
+	const float dt = gt.DeltaTime();
 
-	short key = GetAsyncKeyState('1');
-	//! you can use the virtual key code (0x31) for '1' as well
-	//! https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-	//! short key = GetAsyncKeyState(0x31); 
+	//GetAsyncKeyState returns a short (2 bytes)
+	if (GetAsyncKeyState('W') & 0x8000) //most significant bit (MSB) is 1 when key is pressed (1000 000 000 000)
+		mCamera.Walk(10.0f * dt);
 
-	if (key & 0x8000)  //if one is pressed, 0x8000 = 32767 , key = -32767 = FFFFFFFFFFFF8001
-		mIsWireframe = true;
-	else
-		mIsWireframe = false;
+	if (GetAsyncKeyState('S') & 0x8000)
+		mCamera.Walk(-10.0f * dt);
+
+	if (GetAsyncKeyState('A') & 0x8000)
+		mCamera.Strafe(-10.0f * dt);
+
+	if (GetAsyncKeyState('D') & 0x8000)
+		mCamera.Strafe(10.0f * dt);
+
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+		mCamera.RotateY(5.0f * dt);
+
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+		mCamera.RotateY(-5.0f * dt);
+
+	mCamera.UpdateViewMatrix();
 }
 
 void ShapesApp::UpdateCamera(const GameTimer& gt)
 {
-	// Convert Spherical to Cartesian coordinates.
-	mEyePos.x = mRadius * sinf(mPhi) * cosf(mTheta);
-	mEyePos.z = mRadius * sinf(mPhi) * sinf(mTheta);
-	mEyePos.y = mRadius * cosf(mPhi);
-
-	// Build the view matrix.
-	XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
-	XMVECTOR target = XMVectorZero();
-	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
-	XMStoreFloat4x4(&mView, view);
 }
 
 void ShapesApp::AnimateMaterials(const GameTimer& gt)
@@ -510,8 +487,8 @@ void ShapesApp::UpdateMaterialCBs(const GameTimer& gt)
 //rendering pass while the per object CBV needs to be set per render item
 void ShapesApp::UpdateMainPassCB(const GameTimer& gt)
 {
-	XMMATRIX view = XMLoadFloat4x4(&mView);
-	XMMATRIX proj = XMLoadFloat4x4(&mProj);
+	XMMATRIX view = mCamera.GetView();
+	XMMATRIX proj = mCamera.GetProj();
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
@@ -524,7 +501,7 @@ void ShapesApp::UpdateMainPassCB(const GameTimer& gt)
 	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
-	mMainPassCB.EyePosW = mEyePos;
+	mMainPassCB.EyePosW = mCamera.GetPosition3f();
 	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
 	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
 	mMainPassCB.NearZ = 1.0f;
@@ -541,21 +518,29 @@ void ShapesApp::UpdateMainPassCB(const GameTimer& gt)
 
 	//point light at columns
 
-	mMainPassCB.Lights[1].Position = { 11.0f, 7.5f, -11.0f }; //front left
-	mMainPassCB.Lights[1].Strength = { 0.95f, 0.2f, 0.0f }; // yellow color 
+	mMainPassCB.Lights[1].Position = { 12.0f, 6.5f, 16.0f }; //front left
+	mMainPassCB.Lights[1].Strength = { 0.95f, 0.2f, 0.0f }; // yellow color
+	mMainPassCB.Lights[1].FalloffStart = 3.0f;
+	mMainPassCB.Lights[1].FalloffEnd = 5.0f;
 
-	mMainPassCB.Lights[2].Position = { 11.0f, 7.5f, 11.0f }; // back left
+	mMainPassCB.Lights[2].Position = { 12.0f, 6.5f, 44.0f }; // back left
 	mMainPassCB.Lights[2].Strength = { 0.95f, 0.2f, 0.0f }; // yellow color 
+	mMainPassCB.Lights[2].FalloffStart = 3.0f;
+	mMainPassCB.Lights[2].FalloffEnd = 5.0f;
 
-	mMainPassCB.Lights[3].Position = { -11.0f, 7.5f, -11.0f }; //front left
+	mMainPassCB.Lights[3].Position = { -12.0f, 6.5f, 16.0f }; //front left
 	mMainPassCB.Lights[3].Strength = { 0.95f, 0.2f, 0.0f }; // yellow color 
+	mMainPassCB.Lights[3].FalloffStart = 3.0f;
+	mMainPassCB.Lights[3].FalloffEnd = 5.0f;
 
-	mMainPassCB.Lights[4].Position = { -11.0f, 7.5f, 11.0f }; // back left
+	mMainPassCB.Lights[4].Position = { -12.0f, 6.5f, 44.0f }; // back left
 	mMainPassCB.Lights[4].Strength = { 0.95f, 0.2f, 0.0f }; // yellow color 
+	mMainPassCB.Lights[4].FalloffStart = 3.0f;
+	mMainPassCB.Lights[4].FalloffEnd = 5.0f;
 
 
 	// spot light at door
-	mMainPassCB.Lights[5].Position = { 0.0f, 5.0f, -11.0f };
+	mMainPassCB.Lights[5].Position = { 0.0f, 5.0f, 19.0f };
 	mMainPassCB.Lights[5].Direction = { 0.0f, -1.0f,-1.0f };
 	mMainPassCB.Lights[5].Strength = { 1.0f, 0.95f, 0.35f };
 	mMainPassCB.Lights[5].SpotPower = 0.95f;
@@ -636,6 +621,13 @@ void ShapesApp::LoadTextures()
 		mCommandList.Get(), grassTex->Filename.c_str(),
 		grassTex->Resource, grassTex->UploadHeap));
 
+	auto bushTex = std::make_unique<Texture>();
+	bushTex->Name = "bushTex";
+	bushTex->Filename = L"../../Textures/Bush2.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), bushTex->Filename.c_str(),
+		bushTex->Resource, bushTex->UploadHeap));
+
 	auto treeArrayTex = std::make_unique<Texture>();
 	treeArrayTex->Name = "treeArrayTex";
 	treeArrayTex->Filename = L"../../Textures/treeArray.dds";
@@ -647,6 +639,7 @@ void ShapesApp::LoadTextures()
 	mTextures[waterTex->Name] = std::move(waterTex);
 	mTextures[tileTex->Name] = std::move(tileTex);
 	mTextures[grassTex->Name] = std::move(grassTex);
+	mTextures[bushTex->Name] = std::move(bushTex);
 	mTextures[treeArrayTex->Name] = std::move(treeArrayTex);
 }
 
@@ -699,7 +692,7 @@ void ShapesApp::BuildDescriptorHeaps()
 	// Create the SRV heap.
 	//
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 5;
+	srvHeapDesc.NumDescriptors = 7;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
@@ -713,7 +706,9 @@ void ShapesApp::BuildDescriptorHeaps()
 	auto waterTex = mTextures["waterTex"]->Resource;
 	auto tileTex = mTextures["tileTex"]->Resource;
 	auto grassTex = mTextures["grassTex"]->Resource;
+	auto bushTex = mTextures["bushTex"]->Resource;
 	auto treeArrayTex = mTextures["treeArrayTex"]->Resource;
+
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -738,13 +733,20 @@ void ShapesApp::BuildDescriptorHeaps()
 	md3dDevice->CreateShaderResourceView(tileTex.Get(), &srvDesc, hDescriptor);
 
 	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	srvDesc.Format = grassTex->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = grassTex->GetDesc().MipLevels;
 	md3dDevice->CreateShaderResourceView(grassTex.Get(), &srvDesc, hDescriptor);
 
+
 	// next descriptor
 	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+	srvDesc.Format = bushTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = bushTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(bushTex.Get(), &srvDesc, hDescriptor);
 
+	// next descriptor
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
 	auto desc = treeArrayTex->GetDesc();
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 	srvDesc.Format = treeArrayTex->GetDesc().Format;
@@ -856,22 +858,29 @@ void ShapesApp::BuildTreeSpritesGeometry()
 
 	float x, y, z;
 
-	static const int treeCount = 16;
-	std::array<TreeSpriteVertex, 16> vertices;
+	static const int treeCount = 22;
+	std::array<TreeSpriteVertex, 22> vertices;
 	for (UINT i = 0; i < treeCount; ++i)
 	{
 		if (i < 8)
 		{
 			x = -22;
-			z = -22.5 + (i * 6);
-			y = 6;
+			z = 8.5f + (i * 6);
+			y = 5.8;
 		}
-		else
+		else if(i >= 8 && i < 16)
 		{
 			int index = i - 8;
 			x = 22;
-			z = -22.5 + (index * 6);
-			y = 6;
+			z = 8.5f + (index * 6);
+			y = 5.8;
+		}
+		else
+		{
+			int index = i - 16;
+			x = 17 - (index * 6);
+			z = 52.0;
+			y = 5.8;
 		}
 
 		// Move tree slightly above land height.
@@ -881,10 +890,10 @@ void ShapesApp::BuildTreeSpritesGeometry()
 		vertices[i].Size = XMFLOAT2(8.0f, 8.0f);
 	}
 
-	std::array<std::uint16_t, 16> indices =
+	std::array<std::uint16_t, 22> indices =
 	{
 		0, 1, 2, 3, 4, 5, 6, 7,
-		8, 9, 10, 11, 12, 13, 14, 15
+		8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21
 	};
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(TreeSpriteVertex);
@@ -1249,32 +1258,50 @@ void ShapesApp::BuildMaterials()
 	water0->FresnelR0 = XMFLOAT3(0.2f, 0.2f, 0.2f);
 	water0->Roughness = 0.0f;
 
+	auto tile0 = std::make_unique<Material>();
+	tile0->Name = "tile0";
+	tile0->MatCBIndex = 2;
+	tile0->DiffuseSrvHeapIndex = 2;
+	tile0->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	tile0->FresnelR0 = XMFLOAT3(0.2f, 0.2f, 0.2f);
+	tile0->Roughness = 0.0f;
+
 	auto grass0 = std::make_unique<Material>();
 	grass0->Name = "grass0";
-	grass0->MatCBIndex = 2;
-	grass0->DiffuseSrvHeapIndex = 2;
+	grass0->MatCBIndex = 3;
+	grass0->DiffuseSrvHeapIndex = 3;
 	grass0->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	grass0->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
 	grass0->Roughness = 0.125f;
 
+	auto bush0 = std::make_unique<Material>();
+	bush0->Name = "bush0";
+	bush0->MatCBIndex = 4;
+	bush0->DiffuseSrvHeapIndex = 4;
+	bush0->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	bush0->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
+	bush0->Roughness = 0.125f;
+
 	auto treeSprites0 = std::make_unique<Material>();
 	treeSprites0->Name = "treeSprites0";
-	treeSprites0->MatCBIndex = 3;
-	treeSprites0->DiffuseSrvHeapIndex = 3;
+	treeSprites0->MatCBIndex = 5;
+	treeSprites0->DiffuseSrvHeapIndex = 5;
 	treeSprites0->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	treeSprites0->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
 	treeSprites0->Roughness = 0.125f;
 
 	mMaterials["bricks0"] = std::move(bricks0);
 	mMaterials["water0"] = std::move(water0);
+	mMaterials["tile0"] = std::move(tile0);
 	mMaterials["grass0"] = std::move(grass0);
+	mMaterials["bush0"] = std::move(bush0);
 	mMaterials["treeSprites0"] = std::move(treeSprites0);
 }
 
 void ShapesApp::BuildRenderItems()
 {
 	auto leftWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&leftWallRitem->World, XMMatrixScaling(1.0f, 4.0f, 20.0f) * XMMatrixTranslation(-11.0f, 4.0f, 0.0f));
+	XMStoreFloat4x4(&leftWallRitem->World, XMMatrixScaling(1.0f, 4.0f, 20.0f) * XMMatrixTranslation(-11.0f, 4.4f, 30.0f));
 	leftWallRitem->ObjCBIndex = 0;
 	leftWallRitem->Mat = mMaterials["bricks0"].get();
 	leftWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1283,9 +1310,15 @@ void ShapesApp::BuildRenderItems()
 	leftWallRitem->StartIndexLocation = leftWallRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
 	leftWallRitem->BaseVertexLocation = leftWallRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(leftWallRitem));
+	RenderCollisionRectangles leftWallRitemCol;
+	leftWallRitemCol.posX = -11.0;
+	leftWallRitemCol.posZ = 30.0;
+	leftWallRitemCol.sizeX = 1.0;
+	leftWallRitemCol.sizeZ = 20.0;
+	rectangles.push_back(leftWallRitemCol);
 
 	auto rightWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&rightWallRitem->World, XMMatrixScaling(1.0f, 4.0f, 20.0f) * XMMatrixTranslation(11.0f, 4.0f, 0.0f));
+	XMStoreFloat4x4(&rightWallRitem->World, XMMatrixScaling(1.0f, 4.0f, 20.0f) * XMMatrixTranslation(11.0f, 4.4f, 30.0f));
 	rightWallRitem->ObjCBIndex = 1;
 	rightWallRitem->Mat = mMaterials["bricks0"].get();
 	rightWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1294,9 +1327,15 @@ void ShapesApp::BuildRenderItems()
 	rightWallRitem->StartIndexLocation = rightWallRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
 	rightWallRitem->BaseVertexLocation = rightWallRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(rightWallRitem));
+	RenderCollisionRectangles rightWallRitemCol;
+	rightWallRitemCol.posX = 11.0;
+	rightWallRitemCol.posZ = 30.0;
+	rightWallRitemCol.sizeX = 1.0;
+	rightWallRitemCol.sizeZ = 20.0;
+	rectangles.push_back(rightWallRitemCol);
 
 	auto backWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&backWallRitem->World, XMMatrixScaling(20.0f, 4.0f, 1.0f) * XMMatrixTranslation(0.0f, 4.0f, 11.0f));
+	XMStoreFloat4x4(&backWallRitem->World, XMMatrixScaling(20.0f, 4.0f, 1.0f) * XMMatrixTranslation(0.0f, 4.4f, 41.0f));
 	backWallRitem->ObjCBIndex = 2;
 	backWallRitem->Mat = mMaterials["bricks0"].get();
 	backWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1305,9 +1344,15 @@ void ShapesApp::BuildRenderItems()
 	backWallRitem->StartIndexLocation = backWallRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
 	backWallRitem->BaseVertexLocation = backWallRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(backWallRitem));
+	RenderCollisionRectangles backWallRitemCol;
+	backWallRitemCol.posX = 0.0;
+	backWallRitemCol.posZ = 41.0;
+	backWallRitemCol.sizeX = 20.0;
+	backWallRitemCol.sizeZ = 1.0;
+	rectangles.push_back(backWallRitemCol);
 
 	auto frontLeftWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&frontLeftWallRitem->World, XMMatrixScaling(7.0f, 4.0f, 1.0f) * XMMatrixTranslation(-6.5f, 4.0f, -11.0f));
+	XMStoreFloat4x4(&frontLeftWallRitem->World, XMMatrixScaling(7.0f, 4.0f, 1.0f) * XMMatrixTranslation(-6.5f, 4.4f, 19.05f));
 	frontLeftWallRitem->ObjCBIndex = 3;
 	frontLeftWallRitem->Mat = mMaterials["bricks0"].get();
 	frontLeftWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1316,9 +1361,15 @@ void ShapesApp::BuildRenderItems()
 	frontLeftWallRitem->StartIndexLocation = frontLeftWallRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
 	frontLeftWallRitem->BaseVertexLocation = frontLeftWallRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(frontLeftWallRitem));
+	RenderCollisionRectangles frontLeftWallRitemCol;
+	frontLeftWallRitemCol.posX = -6.5;
+	frontLeftWallRitemCol.posZ = 19.0;
+	frontLeftWallRitemCol.sizeX = 7.0;
+	frontLeftWallRitemCol.sizeZ = 1.0;
+	rectangles.push_back(frontLeftWallRitemCol);
 
 	auto frontRightWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&frontRightWallRitem->World, XMMatrixScaling(7.0f, 4.0f, 1.0f) * XMMatrixTranslation(6.5f, 4.0f, -11.0f));
+	XMStoreFloat4x4(&frontRightWallRitem->World, XMMatrixScaling(7.0f, 4.0f, 1.0f) * XMMatrixTranslation(6.5f, 4.4f, 19.05f));
 	frontRightWallRitem->ObjCBIndex = 4;
 	frontRightWallRitem->Mat = mMaterials["bricks0"].get();
 	frontRightWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1327,9 +1378,15 @@ void ShapesApp::BuildRenderItems()
 	frontRightWallRitem->StartIndexLocation = frontRightWallRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
 	frontRightWallRitem->BaseVertexLocation = frontRightWallRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(frontRightWallRitem));
+	RenderCollisionRectangles frontRightWallRitemCol;
+	frontRightWallRitemCol.posX = 6.5;
+	frontRightWallRitemCol.posZ = 19.0;
+	frontRightWallRitemCol.sizeX = 7.0;
+	frontRightWallRitemCol.sizeZ = 1.0;
+	rectangles.push_back(frontRightWallRitemCol);
 
 	auto upperDoorWallRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&upperDoorWallRitem->World, XMMatrixScaling(6.0f, 1.0f, 1.0f) * XMMatrixTranslation(0.0f, 5.5f, -11.0f));
+	XMStoreFloat4x4(&upperDoorWallRitem->World, XMMatrixScaling(6.0f, 1.0f, 1.0f) * XMMatrixTranslation(0.0f, 5.9f, 19.0f));
 	upperDoorWallRitem->ObjCBIndex = 5;
 	upperDoorWallRitem->Mat = mMaterials["bricks0"].get();
 	upperDoorWallRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1340,7 +1397,7 @@ void ShapesApp::BuildRenderItems()
 	mAllRitems.push_back(std::move(upperDoorWallRitem));
 
 	auto roofRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&roofRitem->World, XMMatrixScaling(22.5f, 0.5f, 22.5f) * XMMatrixTranslation(0.0f, 5.75f, 0.0f));
+	XMStoreFloat4x4(&roofRitem->World, XMMatrixScaling(22.5f, 0.5f, 22.5f) * XMMatrixTranslation(0.0f, 6.15f, 30.0f));
 	roofRitem->ObjCBIndex = 6;
 	roofRitem->Mat = mMaterials["bricks0"].get();
 	roofRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1353,7 +1410,7 @@ void ShapesApp::BuildRenderItems()
 
 
 	auto frontLeftColumnRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&frontLeftColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(-11.0f, 4.5f, -11.0f));
+	XMStoreFloat4x4(&frontLeftColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(-11.0f, 4.9f, 19.0f));
 	frontLeftColumnRitem->ObjCBIndex = 7;
 	frontLeftColumnRitem->Mat = mMaterials["bricks0"].get();
 	frontLeftColumnRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1362,9 +1419,15 @@ void ShapesApp::BuildRenderItems()
 	frontLeftColumnRitem->StartIndexLocation = frontLeftColumnRitem->Geo->DrawArgs["cylinder"].StartIndexLocation; //0
 	frontLeftColumnRitem->BaseVertexLocation = frontLeftColumnRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(frontLeftColumnRitem));
+	RenderCollisionRectangles frontLeftColumnRitemCol;
+	frontLeftColumnRitemCol.posX = -11.0;
+	frontLeftColumnRitemCol.posZ = 19.0;
+	frontLeftColumnRitemCol.sizeX = 3.0;
+	frontLeftColumnRitemCol.sizeZ = 3.0;
+	rectangles.push_back(frontLeftColumnRitemCol);
 
 	auto frontrightColumnRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&frontrightColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(11.0f, 4.5f, -11.0f));
+	XMStoreFloat4x4(&frontrightColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(11.0f, 4.9f, 19.0f));
 	frontrightColumnRitem->ObjCBIndex = 8;
 	frontrightColumnRitem->Mat = mMaterials["bricks0"].get();
 	frontrightColumnRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1373,9 +1436,15 @@ void ShapesApp::BuildRenderItems()
 	frontrightColumnRitem->StartIndexLocation = frontrightColumnRitem->Geo->DrawArgs["cylinder"].StartIndexLocation; //0
 	frontrightColumnRitem->BaseVertexLocation = frontrightColumnRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(frontrightColumnRitem));
+	RenderCollisionRectangles frontrightColumnRitemCol;
+	frontrightColumnRitemCol.posX = 11.0;
+	frontrightColumnRitemCol.posZ = 19.0;
+	frontrightColumnRitemCol.sizeX = 3.0;
+	frontrightColumnRitemCol.sizeZ = 3.0;
+	rectangles.push_back(frontrightColumnRitemCol);
 
 	auto backLeftColumnRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&backLeftColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(-11.0f, 4.5f, 11.0f));
+	XMStoreFloat4x4(&backLeftColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(-11.0f, 4.9f, 41.0f));
 	backLeftColumnRitem->ObjCBIndex = 9;
 	backLeftColumnRitem->Mat = mMaterials["bricks0"].get();
 	backLeftColumnRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1384,9 +1453,15 @@ void ShapesApp::BuildRenderItems()
 	backLeftColumnRitem->StartIndexLocation = backLeftColumnRitem->Geo->DrawArgs["cylinder"].StartIndexLocation; //0
 	backLeftColumnRitem->BaseVertexLocation = backLeftColumnRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(backLeftColumnRitem));
+	RenderCollisionRectangles backLeftColumnRitemCol;
+	backLeftColumnRitemCol.posX = -11.0;
+	backLeftColumnRitemCol.posZ = 41.0;
+	backLeftColumnRitemCol.sizeX = 3.0;
+	backLeftColumnRitemCol.sizeZ = 3.0;
+	rectangles.push_back(backLeftColumnRitemCol);
 
 	auto backrightColumnRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&backrightColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(11.0f, 4.5f, 11.0f));
+	XMStoreFloat4x4(&backrightColumnRitem->World, XMMatrixScaling(1.2f, 5.0f, 1.2f) * XMMatrixTranslation(11.0f, 4.9f, 41.0f));
 	backrightColumnRitem->ObjCBIndex = 10;
 	backrightColumnRitem->Mat = mMaterials["bricks0"].get();
 	backrightColumnRitem->Geo = mGeometries["shapeGeo"].get();
@@ -1395,34 +1470,17 @@ void ShapesApp::BuildRenderItems()
 	backrightColumnRitem->StartIndexLocation = backrightColumnRitem->Geo->DrawArgs["cylinder"].StartIndexLocation; //0
 	backrightColumnRitem->BaseVertexLocation = backrightColumnRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(backrightColumnRitem));
-
-	auto gridRitem = std::make_unique<RenderItem>();
-	gridRitem->World = MathHelper::Identity4x4();
-	gridRitem->ObjCBIndex = 11;
-	gridRitem->Mat = mMaterials["bricks0"].get();
-	gridRitem->Geo = mGeometries["shapeGeo"].get();
-	gridRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	gridRitem->IndexCount = gridRitem->Geo->DrawArgs["grid"].IndexCount;
-	gridRitem->StartIndexLocation = gridRitem->Geo->DrawArgs["grid"].StartIndexLocation;
-	gridRitem->BaseVertexLocation = gridRitem->Geo->DrawArgs["grid"].BaseVertexLocation;
-	mAllRitems.push_back(std::move(gridRitem));
-
-
-	auto floorRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&floorRitem->World, XMMatrixScaling(1.0f, 1.0f, 1.0f)* XMMatrixTranslation(0.0f, 2.1f, 0.0f));
-	floorRitem->ObjCBIndex = 12;
-	floorRitem->Mat = mMaterials["bricks0"].get();
-	floorRitem->Geo = mGeometries["shapeGeo"].get();
-	floorRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	floorRitem->IndexCount = floorRitem->Geo->DrawArgs["floor"].IndexCount;
-	floorRitem->StartIndexLocation = floorRitem->Geo->DrawArgs["floor"].StartIndexLocation;
-	floorRitem->BaseVertexLocation = floorRitem->Geo->DrawArgs["floor"].BaseVertexLocation;
-	mAllRitems.push_back(std::move(floorRitem));
+	RenderCollisionRectangles backrightColumnRitemCol;
+	backrightColumnRitemCol.posX = 11.0;
+	backrightColumnRitemCol.posZ = 41.0;
+	backrightColumnRitemCol.sizeX = 3.0;
+	backrightColumnRitemCol.sizeZ = 3.0;
+	rectangles.push_back(backrightColumnRitemCol);
 
 	//Cone Column Battlement
 	auto coneFrontLeft = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&coneFrontLeft->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(-11.0f, 8.0f, -11.0f));
-	coneFrontLeft->ObjCBIndex = 13;
+	XMStoreFloat4x4(&coneFrontLeft->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(-11.0f, 8.4f, 19.0f));
+	coneFrontLeft->ObjCBIndex = 11;
 	coneFrontLeft->Mat = mMaterials["bricks0"].get();
 	coneFrontLeft->Geo = mGeometries["shapeGeo"].get();
 	coneFrontLeft->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1432,8 +1490,8 @@ void ShapesApp::BuildRenderItems()
 	mAllRitems.push_back(std::move(coneFrontLeft));
 
 	auto coneFrontRight= std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&coneFrontRight->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(11.0f, 8.0f, -11.0f));
-	coneFrontRight->ObjCBIndex = 14;
+	XMStoreFloat4x4(&coneFrontRight->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(11.0f, 8.4f, 19.0f));
+	coneFrontRight->ObjCBIndex = 12;
 	coneFrontRight->Mat = mMaterials["bricks0"].get();
 	coneFrontRight->Geo = mGeometries["shapeGeo"].get();
 	coneFrontRight->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1444,8 +1502,8 @@ void ShapesApp::BuildRenderItems()
 
 
 	auto coneBackLeft = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&coneBackLeft->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(-11.0f, 8.0f, 11.0f));
-	coneBackLeft->ObjCBIndex = 15;
+	XMStoreFloat4x4(&coneBackLeft->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(-11.0f, 8.4f, 41.0f));
+	coneBackLeft->ObjCBIndex = 13;
 	coneBackLeft->Mat = mMaterials["bricks0"].get();
 	coneBackLeft->Geo = mGeometries["shapeGeo"].get();
 	coneBackLeft->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1456,8 +1514,8 @@ void ShapesApp::BuildRenderItems()
 
 
 	auto coneBackRight = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&coneBackRight->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(11.0f, 8.0f, 11.0f));
-	coneBackRight->ObjCBIndex = 16;
+	XMStoreFloat4x4(&coneBackRight->World, XMMatrixScaling(1.5f, 2.0f, 1.5f)* XMMatrixTranslation(11.0f, 8.4f, 41.0f));
+	coneBackRight->ObjCBIndex = 14;
 	coneBackRight->Mat = mMaterials["bricks0"].get();
 	coneBackRight->Geo = mGeometries["shapeGeo"].get();
 	coneBackRight->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1468,8 +1526,8 @@ void ShapesApp::BuildRenderItems()
 
 	 /*door*/ // * XMMatrixRotationX(-45.0f)
 	auto door = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&door->World, XMMatrixScaling(6.0f, 3.0f, 0.5f)* XMMatrixTranslation(0.0f, 13.0f, -3.5f) * XMMatrixRotationX(-45.0f));
-	door->ObjCBIndex = 17;
+	XMStoreFloat4x4(&door->World, XMMatrixScaling(6.0f, 3.0f, 0.5f) * XMMatrixRotationX(-45.0f) * XMMatrixTranslation(0.0f, 3.6f, 17.5f));
+	door->ObjCBIndex = 15;
 	door->Mat = mMaterials["bricks0"].get();
 	door->Geo = mGeometries["shapeGeo"].get();
 	door->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1488,8 +1546,8 @@ void ShapesApp::BuildRenderItems()
 
 		//front
 		auto coneFrontBattlement = std::make_unique<RenderItem>();
-		XMStoreFloat4x4(&coneFrontBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.0f) * XMMatrixTranslation(-8.9f + i + j, 6.5f, -11.0f));
-		coneFrontBattlement->ObjCBIndex = 18 +i;
+		XMStoreFloat4x4(&coneFrontBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.0f) * XMMatrixTranslation(-8.9f + i + j, 6.9f, 19.0f));
+		coneFrontBattlement->ObjCBIndex = 16 +i;
 
 		if (randNum1 >= 0.0f && randNum1 < 3.0f)
 		{
@@ -1509,8 +1567,8 @@ void ShapesApp::BuildRenderItems()
 
 		////back
 		auto coneBackBattlement = std::make_unique<RenderItem>();
-		XMStoreFloat4x4(&coneBackBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.0f) * XMMatrixTranslation(-8.9f + i + j, 6.5f, 11.0f));
-		coneBackBattlement->ObjCBIndex = 30 + i;
+		XMStoreFloat4x4(&coneBackBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.0f) * XMMatrixTranslation(-8.9f + i + j, 6.9f, 41.0f));
+		coneBackBattlement->ObjCBIndex = 28 + i;
 		if (randNum2 >= 0.0f && randNum2 < 3.0f)
 		{
 			coneBackBattlement->Mat = mMaterials["bricks0"].get();
@@ -1538,8 +1596,8 @@ void ShapesApp::BuildRenderItems()
 
 		// left
 		auto cubeLeftBattlement = std::make_unique<RenderItem>();
-		XMStoreFloat4x4(&cubeLeftBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.5f) * XMMatrixTranslation(-10.5f , 6.5f, 8.9f - a - b));
-		cubeLeftBattlement->ObjCBIndex = 42 + a;
+		XMStoreFloat4x4(&cubeLeftBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.5f) * XMMatrixTranslation(-10.5f , 6.9f, 38.9f - a - b));
+		cubeLeftBattlement->ObjCBIndex = 40 + a;
 		if (randNum1 >= 0.0f && randNum1 < 3.0f)
 		{
 			cubeLeftBattlement->Mat = mMaterials["bricks0"].get();
@@ -1557,8 +1615,8 @@ void ShapesApp::BuildRenderItems()
 
 		//Right
 		auto cubeRightBattlement = std::make_unique<RenderItem>();
-		XMStoreFloat4x4(&cubeRightBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.5f) * XMMatrixTranslation(10.5f, 6.5f, 8.9f - a - b));
-		cubeRightBattlement->ObjCBIndex = 51 + a;
+		XMStoreFloat4x4(&cubeRightBattlement->World, XMMatrixScaling(1.0f, 1.0f, 1.5f) * XMMatrixTranslation(10.5f, 6.9f, 38.9f - a - b));
+		cubeRightBattlement->ObjCBIndex = 49 + a;
 		if (randNum2 >= 0.0f && randNum2 < 3.0f)
 		{
 			cubeRightBattlement->Mat = mMaterials["bricks0"].get();
@@ -1582,8 +1640,8 @@ void ShapesApp::BuildRenderItems()
 	// Door chains
 	// right chain
 	auto rightchain = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&rightchain->World, XMMatrixScaling(0.15f, 2.5f, 0.15f) * XMMatrixTranslation(2.5f,-8.0f,-10.5f) * XMMatrixRotationX(45.0f));
-	rightchain->ObjCBIndex = 60;
+	XMStoreFloat4x4(&rightchain->World, XMMatrixScaling(0.15f, 2.5f, 0.15f) * XMMatrixRotationX(45.0f) * XMMatrixTranslation(2.5f, 5.0f, 18.0f));
+	rightchain->ObjCBIndex = 58;
 	rightchain->Mat = mMaterials["grass0"].get();
 	rightchain->Geo = mGeometries["shapeGeo"].get();
 	rightchain->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1594,8 +1652,8 @@ void ShapesApp::BuildRenderItems()
 
 	// left chain
 	auto leftchain = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&leftchain->World, XMMatrixScaling(0.15f, 2.5f, 0.15f) * XMMatrixTranslation(-2.5f, -8.0f, -10.5f) * XMMatrixRotationX(45.0f));
-	leftchain->ObjCBIndex = 61;
+	XMStoreFloat4x4(&leftchain->World, XMMatrixScaling(0.15f, 2.5f, 0.15f) * XMMatrixRotationX(45.0f) * XMMatrixTranslation(-2.5f, 5.0f, 18.0f));
+	leftchain->ObjCBIndex = 59;
 	leftchain->Mat = mMaterials["grass0"].get();
 	leftchain->Geo = mGeometries["shapeGeo"].get();
 	leftchain->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1608,7 +1666,7 @@ void ShapesApp::BuildRenderItems()
 	auto wavesRitem = std::make_unique<RenderItem>();
 	wavesRitem->World = MathHelper::Identity4x4();
 	XMStoreFloat4x4(&wavesRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
-	wavesRitem->ObjCBIndex = 62;
+	wavesRitem->ObjCBIndex = 60;
 	wavesRitem->Mat = mMaterials["water0"].get();
 	wavesRitem->Geo = mGeometries["waterGeo"].get();
 	wavesRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1623,8 +1681,7 @@ void ShapesApp::BuildRenderItems()
 
 	auto treeSpritesRitem = std::make_unique<RenderItem>();
 	treeSpritesRitem->World = MathHelper::Identity4x4();
-	XMStoreFloat4x4(&treeSpritesRitem->TexTransform, XMMatrixScaling(1.0f, 1.0f, 1.0f));
-	treeSpritesRitem->ObjCBIndex = 63;
+	treeSpritesRitem->ObjCBIndex = 61;
 	treeSpritesRitem->Mat = mMaterials["treeSprites0"].get();
 	treeSpritesRitem->Geo = mGeometries["treeSpritesGeo"].get();
 	//step2
@@ -1639,8 +1696,8 @@ void ShapesApp::BuildRenderItems()
 
 	//Add grass ground
 	auto foundationitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&foundationitem->World, XMMatrixScaling(50.0f, 1.0f, 50.0f)* XMMatrixTranslation(0.0f, 0.5f, 0.0f));
-	foundationitem->ObjCBIndex = 64;
+	XMStoreFloat4x4(&foundationitem->World, XMMatrixScaling(60.0f, 1.5f, 115.0f)* XMMatrixTranslation(0.0f, 1.4f, 2.5f));
+	foundationitem->ObjCBIndex = 62;
 	foundationitem->Mat = mMaterials["grass0"].get();
 	foundationitem->Geo = mGeometries["shapeGeo"].get();
 	foundationitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1651,8 +1708,8 @@ void ShapesApp::BuildRenderItems()
 
 //add brick foundation
 	auto foundationitem2 = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&foundationitem2->World, XMMatrixScaling(40.0f, 1.0f, 40.0f)* XMMatrixTranslation(0.0f, 1.5f, 0.0f));
-	foundationitem2->ObjCBIndex = 65;
+	XMStoreFloat4x4(&foundationitem2->World, XMMatrixScaling(40.0f, 0.3f, 40.0f)* XMMatrixTranslation(0.0f, 2.3f, 30.0f));
+	foundationitem2->ObjCBIndex = 63;
 	foundationitem2->Mat = mMaterials["bricks0"].get();
 	foundationitem2->Geo = mGeometries["shapeGeo"].get();
 	foundationitem2->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
@@ -1661,6 +1718,438 @@ void ShapesApp::BuildRenderItems()
 	foundationitem2->BaseVertexLocation = foundationitem2->Geo->DrawArgs["box"].BaseVertexLocation; //0
 	mAllRitems.push_back(std::move(foundationitem2));
 
+
+	///MAZE
+
+	auto leftMazeRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&leftMazeRitem->World, XMMatrixScaling(1.0f, 4.0f, 50.0f)* XMMatrixTranslation(24.5f, 4.1f, -20.5f));
+	leftMazeRitem->ObjCBIndex = 64;
+	leftMazeRitem->Mat = mMaterials["bush0"].get();
+	leftMazeRitem->Geo = mGeometries["shapeGeo"].get();
+	leftMazeRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	leftMazeRitem->IndexCount = leftMazeRitem->Geo->DrawArgs["box"].IndexCount;  //36
+	leftMazeRitem->StartIndexLocation = leftMazeRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
+	leftMazeRitem->BaseVertexLocation = leftMazeRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	RenderCollisionRectangles leftMazeRitemCol;
+	leftMazeRitemCol.posX = 24.5;
+	leftMazeRitemCol.posZ = -20.5;
+	leftMazeRitemCol.sizeX = 1.0;
+	leftMazeRitemCol.sizeZ = 50.0;
+	rectangles.push_back(leftMazeRitemCol);
+	mAllRitems.push_back(std::move(leftMazeRitem));
+
+	auto RighttMazeRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&RighttMazeRitem->World, XMMatrixScaling(1.0f, 4.0f, 50.0f)* XMMatrixTranslation(-24.5f, 4.1f, -20.5f));
+	RighttMazeRitem->ObjCBIndex = 65;
+	RighttMazeRitem->Mat = mMaterials["bush0"].get();
+	RighttMazeRitem->Geo = mGeometries["shapeGeo"].get();
+	RighttMazeRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	RighttMazeRitem->IndexCount = RighttMazeRitem->Geo->DrawArgs["box"].IndexCount;  //36
+	RighttMazeRitem->StartIndexLocation = RighttMazeRitem->Geo->DrawArgs["box"].StartIndexLocation; //0
+	RighttMazeRitem->BaseVertexLocation = RighttMazeRitem->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	RenderCollisionRectangles RighttMazeRitemCol;
+	RighttMazeRitemCol.posX = -24.5;
+	RighttMazeRitemCol.posZ = -20.5;
+	RighttMazeRitemCol.sizeX = 1.0;
+	RighttMazeRitemCol.sizeZ = 50.0;
+	rectangles.push_back(RighttMazeRitemCol);
+	mAllRitems.push_back(std::move(RighttMazeRitem));
+
+	auto FontMazeRitem1 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&FontMazeRitem1->World, XMMatrixScaling(28.0f, 4.0f, 1.0f)* XMMatrixTranslation(-16.0f, 4.1f, -45.1f));
+	FontMazeRitem1->ObjCBIndex = 66;
+	FontMazeRitem1->Mat = mMaterials["bush0"].get();
+	FontMazeRitem1->Geo = mGeometries["shapeGeo"].get();
+	FontMazeRitem1->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	FontMazeRitem1->IndexCount = FontMazeRitem1->Geo->DrawArgs["box"].IndexCount;  //36
+	FontMazeRitem1->StartIndexLocation = FontMazeRitem1->Geo->DrawArgs["box"].StartIndexLocation; //0
+	FontMazeRitem1->BaseVertexLocation = FontMazeRitem1->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	RenderCollisionRectangles FontMazeRitem1Col;
+	FontMazeRitem1Col.posX = -16.0;
+	FontMazeRitem1Col.posZ = -45.1;
+	FontMazeRitem1Col.sizeX = 28.0;
+	FontMazeRitem1Col.sizeZ = 1.0;
+	rectangles.push_back(FontMazeRitem1Col);
+	mAllRitems.push_back(std::move(FontMazeRitem1));
+
+	auto FontMazeRitem2 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&FontMazeRitem2->World, XMMatrixScaling(28.0f, 4.0f, 1.0f)* XMMatrixTranslation(16.0f, 4.1f, -45.1f));
+	FontMazeRitem2->ObjCBIndex = 67;
+	FontMazeRitem2->Mat = mMaterials["bush0"].get();
+	FontMazeRitem2->Geo = mGeometries["shapeGeo"].get();
+	FontMazeRitem2->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	FontMazeRitem2->IndexCount = FontMazeRitem2->Geo->DrawArgs["box"].IndexCount;  //36
+	FontMazeRitem2->StartIndexLocation = FontMazeRitem2->Geo->DrawArgs["box"].StartIndexLocation; //0
+	FontMazeRitem2->BaseVertexLocation = FontMazeRitem2->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	RenderCollisionRectangles FontMazeRitem2Col;
+	FontMazeRitem2Col.posX = 16.0;
+	FontMazeRitem2Col.posZ = -45.1;
+	FontMazeRitem2Col.sizeX = 28.0;
+	FontMazeRitem2Col.sizeZ = 1.0;
+	rectangles.push_back(FontMazeRitem2Col);
+	mAllRitems.push_back(std::move(FontMazeRitem2));
+
+	auto BackMazeRitem1 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&BackMazeRitem1->World, XMMatrixScaling(25.0f, 4.0f, 1.0f)* XMMatrixTranslation(-12.0f, 4.1f, 4.0f));
+	BackMazeRitem1->ObjCBIndex = 68;
+	BackMazeRitem1->Mat = mMaterials["bush0"].get();
+	BackMazeRitem1->Geo = mGeometries["shapeGeo"].get();
+	BackMazeRitem1->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	BackMazeRitem1->IndexCount = BackMazeRitem1->Geo->DrawArgs["box"].IndexCount;  //36
+	BackMazeRitem1->StartIndexLocation = BackMazeRitem1->Geo->DrawArgs["box"].StartIndexLocation; //0
+	BackMazeRitem1->BaseVertexLocation = BackMazeRitem1->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	RenderCollisionRectangles BackMazeRitem1Col;
+	BackMazeRitem1Col.posX = -12.0;
+	BackMazeRitem1Col.posZ = 4.0;
+	BackMazeRitem1Col.sizeX = 25.0;
+	BackMazeRitem1Col.sizeZ = 1.0;
+	rectangles.push_back(BackMazeRitem1Col);
+	mAllRitems.push_back(std::move(BackMazeRitem1));
+
+	auto BackMazeRitem2 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&BackMazeRitem2->World, XMMatrixScaling(15.0f, 4.0f, 1.0f)* XMMatrixTranslation(17.0f, 4.1f, 4.0f));
+	BackMazeRitem2->ObjCBIndex = 69;
+	BackMazeRitem2->Mat = mMaterials["bush0"].get();
+	BackMazeRitem2->Geo = mGeometries["shapeGeo"].get();
+	BackMazeRitem2->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	BackMazeRitem2->IndexCount = BackMazeRitem2->Geo->DrawArgs["box"].IndexCount;  //36
+	BackMazeRitem2->StartIndexLocation = BackMazeRitem2->Geo->DrawArgs["box"].StartIndexLocation; //0
+	BackMazeRitem2->BaseVertexLocation = BackMazeRitem2->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(BackMazeRitem2));
+	RenderCollisionRectangles BackMazeRitem2Col;
+	BackMazeRitem2Col.posX = 17.0;
+	BackMazeRitem2Col.posZ = 4.0;
+	BackMazeRitem2Col.sizeX = 15.0;
+	BackMazeRitem2Col.sizeZ = 1.0;
+	rectangles.push_back(BackMazeRitem2Col);
+
+
+	auto roundabout = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&roundabout->World, XMMatrixScaling(4.0f, 4.0f, 4.0f)* XMMatrixTranslation(0.0f, 4.1f, -22.0f));
+	roundabout->ObjCBIndex = 70;
+	roundabout->Mat = mMaterials["bush0"].get();
+	roundabout->Geo = mGeometries["shapeGeo"].get();
+	roundabout->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	roundabout->IndexCount = roundabout->Geo->DrawArgs["cylinder"].IndexCount;  //36
+	roundabout->StartIndexLocation = roundabout->Geo->DrawArgs["cylinder"].StartIndexLocation; //0
+	roundabout->BaseVertexLocation = roundabout->Geo->DrawArgs["cylinder"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(roundabout));
+	RenderCollisionRectangles roundaboutCol;
+	roundaboutCol.posX = 0.0;
+	roundaboutCol.posZ = -22.0;
+	roundaboutCol.sizeX = 8.0;
+	roundaboutCol.sizeZ = 8.0;
+	rectangles.push_back(roundaboutCol);
+
+
+	//two long horizon maze item 
+	auto HorizonMazeitem1 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem1->World, XMMatrixScaling(40.0f, 4.0f, 1.0f)* XMMatrixTranslation(0.0f, 4.1f, -2.0f));
+	HorizonMazeitem1->ObjCBIndex = 71;
+	HorizonMazeitem1->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem1->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem1->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem1->IndexCount = HorizonMazeitem1->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem1->StartIndexLocation = HorizonMazeitem1->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem1->BaseVertexLocation = HorizonMazeitem1->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem1));
+	RenderCollisionRectangles HorizonMazeitem1Col;
+	HorizonMazeitem1Col.posX = 0.0;
+	HorizonMazeitem1Col.posZ = -2.0;
+	HorizonMazeitem1Col.sizeX = 40.0;
+	HorizonMazeitem1Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem1Col);
+
+	auto HorizonMazeitem2 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem2->World, XMMatrixScaling(40.0f, 4.0f, 1.0f)* XMMatrixTranslation(0.0f, 4.1f, -38.0f));
+	HorizonMazeitem2->ObjCBIndex = 72;
+	HorizonMazeitem2->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem2->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem2->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem2->IndexCount = HorizonMazeitem2->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem2->StartIndexLocation = HorizonMazeitem2->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem2->BaseVertexLocation = HorizonMazeitem2->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem2));
+	RenderCollisionRectangles HorizonMazeitem2Col;
+	HorizonMazeitem2Col.posX = 0.0;
+	HorizonMazeitem2Col.posZ = -38.0;
+	HorizonMazeitem2Col.sizeX = 40.0;
+	HorizonMazeitem2Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem2Col);
+
+	//five short horizon maze item 
+	auto HorizonMazeitem3 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem3->World, XMMatrixScaling(15.0f, 4.0f, 1.0f)* XMMatrixTranslation(10.0f, 4.1f, -8.0f));
+	HorizonMazeitem3->ObjCBIndex = 73;
+	HorizonMazeitem3->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem3->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem3->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem3->IndexCount = HorizonMazeitem3->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem3->StartIndexLocation = HorizonMazeitem3->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem3->BaseVertexLocation = HorizonMazeitem3->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem3));
+	RenderCollisionRectangles HorizonMazeitem3Col;
+	HorizonMazeitem3Col.posX = 10.0;
+	HorizonMazeitem3Col.posZ = -8.0;
+	HorizonMazeitem3Col.sizeX = 15.0;
+	HorizonMazeitem3Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem3Col);
+
+	auto HorizonMazeitem4 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem4->World, XMMatrixScaling(15.0f, 4.0f, 1.0f)* XMMatrixTranslation(-10.0f, 4.1f, -8.1f));
+	HorizonMazeitem4->ObjCBIndex = 74;
+	HorizonMazeitem4->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem4->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem4->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem4->IndexCount = HorizonMazeitem4->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem4->StartIndexLocation = HorizonMazeitem4->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem4->BaseVertexLocation = HorizonMazeitem4->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem4));
+	RenderCollisionRectangles HorizonMazeitem4Col;
+	HorizonMazeitem4Col.posX = -10.0;
+	HorizonMazeitem4Col.posZ = -8.1;
+	HorizonMazeitem4Col.sizeX = 15.0;
+	HorizonMazeitem4Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem4Col);
+
+
+	auto HorizonMazeitem5 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem5->World, XMMatrixScaling(30.0f, 4.0f, 1.0f)* XMMatrixTranslation(-3.0f, 4.1f, -32.0f));
+	HorizonMazeitem5->ObjCBIndex = 75;
+	HorizonMazeitem5->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem5->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem5->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem5->IndexCount = HorizonMazeitem5->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem5->StartIndexLocation = HorizonMazeitem5->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem5->BaseVertexLocation = HorizonMazeitem5->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem5));
+	RenderCollisionRectangles HorizonMazeitem5Col;
+	HorizonMazeitem5Col.posX = -3.0;
+	HorizonMazeitem5Col.posZ = -32.0;
+	HorizonMazeitem5Col.sizeX = 30.0;
+	HorizonMazeitem5Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem5Col);
+
+	///short center items
+	auto HorizonMazeitem6 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem6->World, XMMatrixScaling(6.0f, 4.0f, 1.0f)* XMMatrixTranslation(21.0f, 4.1f, -19.0f));
+	HorizonMazeitem6->ObjCBIndex = 76;
+	HorizonMazeitem6->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem6->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem6->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem6->IndexCount = HorizonMazeitem6->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem6->StartIndexLocation = HorizonMazeitem6->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem6->BaseVertexLocation = HorizonMazeitem6->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem6));
+	RenderCollisionRectangles HorizonMazeitem6Col;
+	HorizonMazeitem6Col.posX = 21.0;
+	HorizonMazeitem6Col.posZ = -19.0;
+	HorizonMazeitem6Col.sizeX = 6.0;
+	HorizonMazeitem6Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem6Col);
+
+	auto HorizonMazeitem7 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem7->World, XMMatrixScaling(6.0f, 4.0f, 1.0f)* XMMatrixTranslation(-21.0f, 4.1f, -19.1f));
+	HorizonMazeitem7->ObjCBIndex = 77;
+	HorizonMazeitem7->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem7->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem7->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem7->IndexCount = HorizonMazeitem7->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem7->StartIndexLocation = HorizonMazeitem7->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem7->BaseVertexLocation = HorizonMazeitem7->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem7));
+	RenderCollisionRectangles HorizonMazeitem7Col;
+	HorizonMazeitem7Col.posX = -21.0;
+	HorizonMazeitem7Col.posZ = -19.1;
+	HorizonMazeitem7Col.sizeX = 6.0;
+	HorizonMazeitem7Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem7Col);
+
+	//five short vertical maze item 
+	auto VerticalMazeitem1 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&VerticalMazeitem1->World, XMMatrixScaling(1.0f,4.0f, 6.0f)* XMMatrixTranslation(-10.0f, 4.1f, 1.0f));
+	VerticalMazeitem1->ObjCBIndex = 78;
+	VerticalMazeitem1->Mat = mMaterials["bush0"].get();
+	VerticalMazeitem1->Geo = mGeometries["shapeGeo"].get();
+	VerticalMazeitem1->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	VerticalMazeitem1->IndexCount = VerticalMazeitem1->Geo->DrawArgs["box"].IndexCount;  //36
+	VerticalMazeitem1->StartIndexLocation = VerticalMazeitem1->Geo->DrawArgs["box"].StartIndexLocation; //0
+	VerticalMazeitem1->BaseVertexLocation = VerticalMazeitem1->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(VerticalMazeitem1));
+	RenderCollisionRectangles VerticalMazeitem1Col;
+	VerticalMazeitem1Col.posX = -10.0;
+	VerticalMazeitem1Col.posZ = 1.0;
+	VerticalMazeitem1Col.sizeX = 1.0;
+	VerticalMazeitem1Col.sizeZ = 6.0;
+	rectangles.push_back(VerticalMazeitem1Col);
+
+	auto VerticalMazeitem2 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&VerticalMazeitem2->World, XMMatrixScaling(1.0f, 4.0f, 6.0f)* XMMatrixTranslation(10.0f, 4.1f, -5.0f));
+	VerticalMazeitem2->ObjCBIndex = 79;
+	VerticalMazeitem2->Mat = mMaterials["bush0"].get();
+	VerticalMazeitem2->Geo = mGeometries["shapeGeo"].get();
+	VerticalMazeitem2->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	VerticalMazeitem2->IndexCount = VerticalMazeitem2->Geo->DrawArgs["box"].IndexCount;  //36
+	VerticalMazeitem2->StartIndexLocation = VerticalMazeitem2->Geo->DrawArgs["box"].StartIndexLocation; //0
+	VerticalMazeitem2->BaseVertexLocation = VerticalMazeitem2->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(VerticalMazeitem2));
+	RenderCollisionRectangles VerticalMazeitem2Col;
+	VerticalMazeitem2Col.posX = 10.0;
+	VerticalMazeitem2Col.posZ = -5.0;
+	VerticalMazeitem2Col.sizeX = 1.0;
+	VerticalMazeitem2Col.sizeZ = 6.0;
+	rectangles.push_back(VerticalMazeitem2Col);
+
+	auto VerticalMazeitem3 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&VerticalMazeitem3->World, XMMatrixScaling(1.0f, 4.0f,20.0f)* XMMatrixTranslation(18.0f, 4.1f, -23.0f));
+	VerticalMazeitem3->ObjCBIndex = 80;
+	VerticalMazeitem3->Mat = mMaterials["bush0"].get();
+	VerticalMazeitem3->Geo = mGeometries["shapeGeo"].get();
+	VerticalMazeitem3->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	VerticalMazeitem3->IndexCount = VerticalMazeitem3->Geo->DrawArgs["box"].IndexCount;  //36
+	VerticalMazeitem3->StartIndexLocation = VerticalMazeitem3->Geo->DrawArgs["box"].StartIndexLocation; //0
+	VerticalMazeitem3->BaseVertexLocation = VerticalMazeitem3->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(VerticalMazeitem3));
+	RenderCollisionRectangles VerticalMazeitem3Col;
+	VerticalMazeitem3Col.posX = 18.0f;
+	VerticalMazeitem3Col.posZ = -23.0f;
+	VerticalMazeitem3Col.sizeX = 1.0;
+	VerticalMazeitem3Col.sizeZ = 20.0;
+	rectangles.push_back(VerticalMazeitem3Col);
+
+	auto VerticalMazeitem4 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&VerticalMazeitem4->World, XMMatrixScaling(1.0f, 4.0f, 8.0f)* XMMatrixTranslation(-18.0f, 4.1f, -18.0f));
+	VerticalMazeitem4->ObjCBIndex = 81;
+	VerticalMazeitem4->Mat = mMaterials["bush0"].get();
+	VerticalMazeitem4->Geo = mGeometries["shapeGeo"].get();
+	VerticalMazeitem4->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	VerticalMazeitem4->IndexCount = VerticalMazeitem4->Geo->DrawArgs["box"].IndexCount;  //36
+	VerticalMazeitem4->StartIndexLocation = VerticalMazeitem4->Geo->DrawArgs["box"].StartIndexLocation; //0
+	VerticalMazeitem4->BaseVertexLocation = VerticalMazeitem4->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(VerticalMazeitem4));
+	RenderCollisionRectangles VerticalMazeitem4Col;
+	VerticalMazeitem4Col.posX = -18.0;
+	VerticalMazeitem4Col.posZ = -18.0;
+	VerticalMazeitem4Col.sizeX = 1.0;
+	VerticalMazeitem4Col.sizeZ = 8.0;
+	rectangles.push_back(VerticalMazeitem4Col);
+
+	auto VerticalMazeitem5 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&VerticalMazeitem5->World, XMMatrixScaling(1.0f, 4.0f, 6.0f)* XMMatrixTranslation(-18.0f, 4.1f, -30.0f));
+	VerticalMazeitem5->ObjCBIndex = 82;
+	VerticalMazeitem5->Mat = mMaterials["bush0"].get();
+	VerticalMazeitem5->Geo = mGeometries["shapeGeo"].get();
+	VerticalMazeitem5->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	VerticalMazeitem5->IndexCount = VerticalMazeitem5->Geo->DrawArgs["box"].IndexCount;  //36
+	VerticalMazeitem5->StartIndexLocation = VerticalMazeitem5->Geo->DrawArgs["box"].StartIndexLocation; //0
+	VerticalMazeitem5->BaseVertexLocation = VerticalMazeitem5->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(VerticalMazeitem5));
+	RenderCollisionRectangles VerticalMazeitem5Col;
+	VerticalMazeitem5Col.posX = -18.0;
+	VerticalMazeitem5Col.posZ = -30;
+	VerticalMazeitem5Col.sizeX = 1.0;
+	VerticalMazeitem5Col.sizeZ = 6.0;
+	rectangles.push_back(VerticalMazeitem5Col);
+
+	//
+	auto HorizonMazeitem8 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem8->World, XMMatrixScaling(30.0f, 4.0f, 1.0f)* XMMatrixTranslation(3.5f, 4.1f, -13.0f));
+	HorizonMazeitem8->ObjCBIndex = 83;
+	HorizonMazeitem8->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem8->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem8->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem8->IndexCount = HorizonMazeitem8->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem8->StartIndexLocation = HorizonMazeitem8->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem8->BaseVertexLocation = HorizonMazeitem8->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem8));
+	RenderCollisionRectangles HorizonMazeitem8Col;
+	HorizonMazeitem8Col.posX = 3.5;
+	HorizonMazeitem8Col.posZ = -13.0;
+	HorizonMazeitem8Col.sizeX = 30.0;
+	HorizonMazeitem8Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem8Col);
+
+	auto HorizonMazeitem9 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem9->World, XMMatrixScaling(8.0f, 4.0f, 1.0f)* XMMatrixTranslation(10.0f, 4.1f, -26.0f));
+	HorizonMazeitem9->ObjCBIndex = 84;
+	HorizonMazeitem9->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem9->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem9->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem9->IndexCount = HorizonMazeitem9->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem9->StartIndexLocation = HorizonMazeitem9->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem9->BaseVertexLocation = HorizonMazeitem9->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem9));
+	RenderCollisionRectangles HorizonMazeitem9Col;
+	HorizonMazeitem9Col.posX = 10.0;
+	HorizonMazeitem9Col.posZ = -26.0;
+	HorizonMazeitem9Col.sizeX = 8.0;
+	HorizonMazeitem9Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem9Col);
+
+	auto HorizonMazeitem10 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem10->World, XMMatrixScaling(12.0f, 4.0f, 1.0f)* XMMatrixTranslation(-12.0f, 4.1f, -26.5f));
+	HorizonMazeitem10->ObjCBIndex = 85;
+	HorizonMazeitem10->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem10->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem10->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem10->IndexCount = HorizonMazeitem10->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem10->StartIndexLocation = HorizonMazeitem10->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem10->BaseVertexLocation = HorizonMazeitem10->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem10));
+	RenderCollisionRectangles HorizonMazeitem10Col;
+	HorizonMazeitem10Col.posX = -12.0;
+	HorizonMazeitem10Col.posZ = -26.5;
+	HorizonMazeitem10Col.sizeX = 12.0;
+	HorizonMazeitem10Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem10Col);
+
+	auto HorizonMazeitem11 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&HorizonMazeitem11->World, XMMatrixScaling(8.0f, 4.0f, 1.0f)* XMMatrixTranslation(-14.0f, 4.1f, -21.5f));
+	HorizonMazeitem11->ObjCBIndex = 86;
+	HorizonMazeitem11->Mat = mMaterials["bush0"].get();
+	HorizonMazeitem11->Geo = mGeometries["shapeGeo"].get();
+	HorizonMazeitem11->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	HorizonMazeitem11->IndexCount = HorizonMazeitem11->Geo->DrawArgs["box"].IndexCount;  //36
+	HorizonMazeitem11->StartIndexLocation = HorizonMazeitem11->Geo->DrawArgs["box"].StartIndexLocation; //0
+	HorizonMazeitem11->BaseVertexLocation = HorizonMazeitem11->Geo->DrawArgs["box"].BaseVertexLocation; //0
+	mAllRitems.push_back(std::move(HorizonMazeitem11));
+	RenderCollisionRectangles HorizonMazeitem11Col;
+	HorizonMazeitem11Col.posX = -14.0;
+	HorizonMazeitem11Col.posZ = -21.5;
+	HorizonMazeitem11Col.sizeX = 8.0;
+	HorizonMazeitem11Col.sizeZ = 1.0;
+	rectangles.push_back(HorizonMazeitem11Col);
+
+	RenderCollisionRectangles LeftBoundryCol;
+	LeftBoundryCol.posX = -30.0;
+	LeftBoundryCol.posZ = 0.0;
+	LeftBoundryCol.sizeX = 2.0;
+	LeftBoundryCol.sizeZ = 120.0;
+	rectangles.push_back(LeftBoundryCol);
+
+	RenderCollisionRectangles RightBoundryCol;
+	RightBoundryCol.posX = 30.0;
+	RightBoundryCol.posZ = 0.0;
+	RightBoundryCol.sizeX = 2.0;
+	RightBoundryCol.sizeZ = 120.0;
+	rectangles.push_back(RightBoundryCol);
+
+	RenderCollisionRectangles FrontBoundryCol;
+	FrontBoundryCol.posX = 0.0;
+	FrontBoundryCol.posZ = -56.0;
+	FrontBoundryCol.sizeX = 60.0;
+	FrontBoundryCol.sizeZ = 2.0;
+	rectangles.push_back(FrontBoundryCol);
+
+	RenderCollisionRectangles BackBoundryCol;
+	BackBoundryCol.posX = 0.0;
+	BackBoundryCol.posZ = 60.0;
+	BackBoundryCol.sizeX = 58.0;
+	BackBoundryCol.sizeZ = 2.0;
+	rectangles.push_back(BackBoundryCol);
+
+	// 
+	// 
 	//// All the render items are opaque.
 	////Our application will maintain lists of render items based on how they need to be
 	////drawn; that is, render items that need different PSOs will be kept in different lists.
@@ -1755,4 +2244,70 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> ShapesApp::GetStaticSamplers()
 		pointWrap, pointClamp,
 		linearWrap, linearClamp,
 		anisotropicWrap, anisotropicClamp };
+}
+
+void ShapesApp::AABBAABBCollision(const GameTimer& gt)
+{
+	for (auto it = rectangles.begin(); it != rectangles.end(); it++)
+	{
+		float minimumTransX = MinimumTranslationVector1D(mCamera.GetPosition3f().x, mCamera.mSize.x / 2, it->posX, it->sizeX / 2);
+
+		float minimumTransZ = MinimumTranslationVector1D(mCamera.GetPosition3f().z, mCamera.mSize.y / 2, it->posZ, it->sizeZ / 2);
+
+		if (minimumTransX == 0 && minimumTransZ == 0) //
+		{
+			continue;
+		}
+		else if (minimumTransX != 0 && minimumTransZ != 0)
+		{
+			DirectX::XMFLOAT3 minimumTranslation;
+
+			if (abs(minimumTransX) < abs(minimumTransZ)) // if the amount we would need to move them by the smaller in the x direction
+			{
+				// move along x because it's less effort (minimum translation)
+				minimumTranslation.x = minimumTransX;
+				minimumTranslation.z = 0;
+				minimumTranslation.y = 0;
+
+				mCamera.SetPosition(mCamera.GetPosition3f().x + minimumTranslation.x, mCamera.GetPosition3f().y, mCamera.GetPosition3f().z);
+			}
+			else
+			{
+				minimumTranslation.x = 0;
+				minimumTranslation.z = minimumTransZ;
+				minimumTranslation.y = 0;
+
+				mCamera.SetPosition(mCamera.GetPosition3f().x, mCamera.GetPosition3f().y, mCamera.GetPosition3f().z + minimumTranslation.z);
+			}
+		}
+	}
+}
+
+float ShapesApp::MinimumTranslationVector1D(const float centerA, const float radiusA, const float centerB, const float radiusB)
+{
+	// Vector between the objects from centerA to centerB
+	float displacementAtoB = centerB - centerA;
+
+	// Find distance
+	float distance = abs(displacementAtoB);
+
+	// Detect overlapping
+	float radiiSum = radiusA + radiusB;
+	float overlap = distance - radiiSum;
+
+	if (overlap > 0)
+	{
+		return 0.0f;
+	}
+
+	// Are overlapping
+	float directionAtoB = Sign(displacementAtoB);
+	float minimumTranslationVector = directionAtoB * overlap;
+
+	return minimumTranslationVector;
+}
+
+float ShapesApp::Sign(const float value)
+{
+	return (value < 0.0f) ? -1.0f : 1.0f;
 }

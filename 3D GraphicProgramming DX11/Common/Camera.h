@@ -74,6 +74,7 @@ public:
 	// After modifying camera position/orientation, call to rebuild the view matrix.
 	void UpdateViewMatrix();
 
+	DirectX::XMFLOAT2 mSize = { 3.0f, 3.0f };
 private:
 
 	// Camera coordinate system with coordinates relative to world space.

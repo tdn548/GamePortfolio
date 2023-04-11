@@ -100,7 +100,6 @@ int D3DApp::Run()
 			}
         }
     }
-
 	return (int)msg.wParam;
 }
 
