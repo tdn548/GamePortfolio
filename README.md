@@ -1,7 +1,7 @@
 # GamePortfolio
 ## Welcome to my Game Portfolio
 
-### This is the game porfolio by Thanh Nguyen. Code by C++/C# Unity and Unreal Engine
+### This is the game porfolio by Thanh Nguyen. Code by C++/C# Unity, Unreal Engine and Tiktok Effect House
 #### 1. A Maze Run game code by C++ and DX11
 - Using DX11 to build the texture, shader, lights in the game.
 - Build castle, tree, waves
@@ -23,13 +23,16 @@ https://user-images.githubusercontent.com/53711944/231231040-34a64a22-c097-45b0-
 - 
 ![AngryBird](https://user-images.githubusercontent.com/53711944/226696637-7b32dc7a-26e2-4e75-9a57-1712911429e2.png)
 
+#### 3. Tiktok Effect House
+- Demo AR 2D game : https://youtube.com/shorts/4HS0lZmjndc?feature=share
+- Build own 2D and 3D Collision Detection with TikTok House
 
-#### 3. Unity Engine 
+#### 4. Unity Engine 
 - Build simple 3D platform game to stimulate physic materials (environment zones: concrete, icey and bouncy) and objects (Traps with torque, unstable platforms with springs)
 - Spikes, Speed up and Slow down zones
 - Gameplay clip:
-https://youtube.com/shorts/4HS0lZmjndc?feature=share
+
 - Check more my demo games at https://simmer.io/@thanh07/
-#### 4. Unreal Engine  
+#### 5. Unreal Engine  
 - Develop a car arena game by Unreal Engine 5.0
 https://youtu.be/sdNuBr_DAFY
