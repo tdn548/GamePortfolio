@@ -24,13 +24,14 @@ https://user-images.githubusercontent.com/53711944/231231040-34a64a22-c097-45b0-
 ![AngryBird](https://user-images.githubusercontent.com/53711944/226696637-7b32dc7a-26e2-4e75-9a57-1712911429e2.png)
 
 #### 3. Tiktok Effect House
-- Demo AR 2D game : https://youtube.com/shorts/4HS0lZmjndc?feature=share
+- Demo AR 2D game : https://youtube.com/shorts/4HS0lZmjndc?feature=share or https://github.com/tdn548/GamePortfolio/assets/53711944/991dbad4-852b-4a85-9f6b-7f8fa463a367
 - Build own 2D and 3D Collision Detection with TikTok House
 
 #### 4. Unity Engine 
 - Build simple 3D platform game to stimulate physic materials (environment zones: concrete, icey and bouncy) and objects (Traps with torque, unstable platforms with springs)
 - Spikes, Speed up and Slow down zones
-- Gameplay clip:
+- Gameplay clip: https://youtu.be/CA9U9T9hMFc or https://github.com/tdn548/GamePortfolio/assets/53711944/c5f6c408-cd61-479e-8794-f3e07c937be7
+
 
 - Check more my demo games at https://simmer.io/@thanh07/
 #### 5. Unreal Engine  
