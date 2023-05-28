@@ -25,6 +25,11 @@ https://user-images.githubusercontent.com/53711944/231231040-34a64a22-c097-45b0-
 
 
 #### 3. Unity Engine 
-- Check my demo games at https://simmer.io/@thanh07/
+- Build simple 3D platform game to stimulate physic materials (environment zones: concrete, icey and bouncy) and objects (Traps with torque, unstable platforms with springs)
+- Spikes, Speed up and Slow down zones
+- Gameplay clip:
+
+
+- Check more my demo games at https://simmer.io/@thanh07/
 #### 4. Unreal Engine  
 - TBU later
