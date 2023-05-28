@@ -1,0 +1,30 @@
+%YAML 1.1
+--- !Material &1
+name: Pucker
+guid: {a: 3263289932259924104, b: 7908347418657096591}
+xshader: {localId: 1, path: 00000000-0000-0000-0000-0000000000g3--00000000-0000-0000-0000-0000000000g3.xshader}
+properties:
+  __class: PropertySheet
+  name: ""
+  guid: {a: 9604469353120142235, b: 8861724927833824953}
+  floatmap:
+    __class: Map
+    enable: 0
+  vec4map:
+    __class: Map
+  vec3map:
+    __class: Map
+  vec2map:
+    __class: Map
+  mat4map:
+    __class: Map
+  texmap:
+    __class: Map
+  intmap:
+    __class: Map
+renderQueue: -1
+enabledMacros:
+  __class: Map
+  AE_AMAZING_USE_BONES: !<str> 1
+mshaderPath: ""
+instanceCount: 0

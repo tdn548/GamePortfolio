@@ -1,0 +1,27 @@
+[
+  {
+    "guid": {
+      "a": "347571d6-2e9e-0204-efc4-d5614b83ecbf",
+      "b": ""
+    },
+    "extraType": "ResItemPNGImage",
+    "name": "SMILE",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "Texture2D",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "compressionType": 0,
+    "quality": 0,
+    "maxResolution": 512,
+    "enableMipmap": false,
+    "filterMin": 1,
+    "filterMag": 1,
+    "filterMipmap": 0,
+    "wrapModeS": 0,
+    "wrapModeT": 0,
+    "wrapModeR": 0,
+    "premultiplyAlpha": true
+  }
+]

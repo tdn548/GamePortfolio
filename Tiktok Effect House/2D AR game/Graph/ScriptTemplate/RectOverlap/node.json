@@ -1,0 +1,71 @@
+{
+	"name": "Rect Overlap",
+	"id": "8c959f87-9e35-b5e1-510c-8b9aa730977b",
+	"inputs": [
+		{
+			"name": "Enter",
+			"type": "Pulse",
+			"item_type": "",
+			"description": "The input execution that triggers this node",
+			"displayType": "Exec",
+			"nameKey": "graph_rect_overlap_input_enter",
+			"descriptionKey": "graph_rect_overlap_input_enter_description",
+			"displayTypeKey": "graph_type_exec"
+		},
+		{
+			"name": "A",
+			"type": "Rect",
+			"item_type": "",
+			"description": "The first rectangle",
+			"displayType": "Rect",
+			"nameKey": "graph_rect_overlap_input_a",
+			"descriptionKey": "graph_rect_overlap_input_a_description",
+			"displayTypeKey": "graph_type_rect"
+		},
+		{
+			"name": "B",
+			"type": "Rect",
+			"item_type": "",
+			"description": "The second rectangle",
+			"displayType": "Rect",
+			"nameKey": "graph_rect_overlap_input_b",
+			"descriptionKey": "graph_rect_overlap_input_b_description",
+			"displayTypeKey": "graph_type_rect"
+		}
+	],
+	"outputs": [
+		{
+			"name": "True",
+			"type": "Pulse",
+			"item_type": "",
+			"description": "Execute the next node when the two rectangles are overlapping",
+			"displayType": "Exec",
+			"nameKey": "graph_rect_overlap_output_true",
+			"descriptionKey": "graph_rect_overlap_output_true_description",
+			"displayTypeKey": "graph_type_exec"
+		},
+		{
+			"name": "False",
+			"type": "Pulse",
+			"item_type": "",
+			"description": "Execute the next node when the two rectangles are not overlapping",
+			"displayType": "Exec",
+			"nameKey": "graph_rect_overlap_output_false",
+			"descriptionKey": "graph_rect_overlap_output_false_description",
+			"displayTypeKey": "graph_type_exec"
+		}
+	],
+	"js": "CGRectOverlap.js",
+	"version": "2.0.0",
+	"category": "Utility",
+	"description": "Detect whether or not two rectangles boundaries are overlapping.",
+	"productTypes": [
+		"EHO",
+		"EHD",
+		"EHI"
+	],
+	"onlineWebsite": "graph_rect_overlap_website",
+	"nameKey": "graph_rect_overlap_name",
+	"categoryKey": "graph_category_utility",
+	"descriptionKey": "graph_rect_overlap_description"
+}

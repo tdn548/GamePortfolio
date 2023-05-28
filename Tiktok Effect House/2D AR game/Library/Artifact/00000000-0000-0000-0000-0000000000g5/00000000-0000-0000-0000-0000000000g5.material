@@ -1,0 +1,29 @@
+%YAML 1.1
+--- !Material &1
+name: EyebrowEraser
+guid: {a: 4633341621337010976, b: 10519679421130261653}
+xshader: {localId: 1, path: 00000000-0000-0000-0000-0000000000g5--00000000-0000-0000-0000-0000000000g5.xshader}
+properties:
+  __class: PropertySheet
+  name: ""
+  guid: {a: 13422074704607737286, b: 13468427206150014379}
+  floatmap:
+    __class: Map
+    enable: 0
+  vec4map:
+    __class: Map
+  vec3map:
+    __class: Map
+  vec2map:
+    __class: Map
+  mat4map:
+    __class: Map
+  texmap:
+    __class: Map
+  intmap:
+    __class: Map
+renderQueue: -1
+enabledMacros:
+  __class: Map
+mshaderPath: ""
+instanceCount: 0

@@ -1,0 +1,27 @@
+%YAML 1.1
+--- !AnimSeq &1
+name: Texture Sequence
+guid: {a: 5308165434246983066, b: 14321591596927234476}
+assettype:
+  __class: SeqAssetType
+  value: atlas
+assetfilename: ""
+fps: 1
+lazyload: true
+cache: false
+atlases:
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--0.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--1.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--2.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--3.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--4.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--5.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--6.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--7.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--8.imageatlas}
+  - {localId: 1, path: 1d9c33fd-c2f4-9878-d923-e843d6eaff88--9.imageatlas}
+memoryLimit: 0
+preload: false
+indexAction:
+  __class: Map
+preloadCount: 0

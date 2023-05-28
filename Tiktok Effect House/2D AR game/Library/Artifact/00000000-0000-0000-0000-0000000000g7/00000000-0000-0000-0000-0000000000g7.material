@@ -1,0 +1,29 @@
+%YAML 1.1
+--- !Material &1
+name: Grin
+guid: {a: 17673123443921568810, b: 10914884082718162335}
+xshader: {localId: 1, path: 00000000-0000-0000-0000-0000000000g7--00000000-0000-0000-0000-0000000000g7.xshader}
+properties:
+  __class: PropertySheet
+  name: ""
+  guid: {a: 13349641999222556970, b: 15983131547356670086}
+  floatmap:
+    __class: Map
+    enable: 0
+  vec4map:
+    __class: Map
+  vec3map:
+    __class: Map
+  vec2map:
+    __class: Map
+  mat4map:
+    __class: Map
+  texmap:
+    __class: Map
+  intmap:
+    __class: Map
+renderQueue: -1
+enabledMacros:
+  __class: Map
+mshaderPath: ""
+instanceCount: 0

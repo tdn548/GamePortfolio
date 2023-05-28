@@ -1,0 +1,29 @@
+%YAML 1.1
+--- !Material &1
+name: MissingMat
+guid: {a: 5317462186095154272, b: 9543501306396952225}
+xshader: {localId: 1, path: 00000000-0000-0000-0000-000000000011--00000000-0000-0000-0000-000000000011.xshader}
+properties:
+  __class: PropertySheet
+  name: ""
+  guid: {a: 5461555549051783366, b: 13041599404151212222}
+  floatmap:
+    __class: Map
+  vec4map:
+    __class: Map
+  vec3map:
+    __class: Map
+  vec2map:
+    __class: Map
+  mat4map:
+    __class: Map
+  texmap:
+    __class: Map
+  intmap:
+    __class: Map
+renderQueue: -1
+enabledMacros:
+  __class: Map
+  AE_AMAZING_USE_BONES: !<str> 1
+mshaderPath: ""
+instanceCount: 0

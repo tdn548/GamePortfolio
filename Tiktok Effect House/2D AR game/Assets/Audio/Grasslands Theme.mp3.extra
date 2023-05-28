@@ -1,0 +1,17 @@
+[
+  {
+    "guid": {
+      "a": "bafc5117-a0f8-6179-b583-cd469f80458e",
+      "b": ""
+    },
+    "extraType": "ResItemMP3",
+    "name": "Grasslands Theme",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "AudioClip",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "mccState": "SUCCESS"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "guid": {
+      "a": "e0d218ef-d414-6f72-6547-5c801c12737a",
+      "b": ""
+    },
+    "extraType": "ResItemPNGImage",
+    "name": "life-off",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "Texture2D",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "compressionType": 0,
+    "quality": 0,
+    "maxResolution": 512,
+    "enableMipmap": false,
+    "filterMin": 1,
+    "filterMag": 1,
+    "filterMipmap": 0,
+    "wrapModeS": 0,
+    "wrapModeT": 0,
+    "wrapModeR": 0,
+    "premultiplyAlpha": true
+  }
+]

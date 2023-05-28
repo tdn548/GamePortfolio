@@ -1,0 +1,19 @@
+[
+  {
+    "guid": {
+      "a": "6b7f9e87-db99-0404-03ea-c93be356aa1e",
+      "b": ""
+    },
+    "extraType": "ResItemTextureSequence",
+    "name": "player",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "AnimSeq",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "compressionType": 0,
+    "quality": 0,
+    "maxResolution": 512
+  }
+]

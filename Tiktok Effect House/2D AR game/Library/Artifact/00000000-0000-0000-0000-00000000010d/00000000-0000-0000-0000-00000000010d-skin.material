@@ -1,0 +1,29 @@
+%YAML 1.1
+--- !Material &1
+name: asset_HDRBakeDiffuse
+guid: {a: 4976777002809135139, b: 6486703329532906668}
+xshader: {localId: 1, path: 00000000-0000-0000-0000-00000000010d--00000000-0000-0000-0000-00000000010d.xshader}
+properties:
+  __class: PropertySheet
+  name: ""
+  guid: {a: 5013132130972211589, b: 5020204266378571441}
+  floatmap:
+    __class: Map
+  vec4map:
+    __class: Map
+  vec3map:
+    __class: Map
+  vec2map:
+    __class: Map
+  mat4map:
+    __class: Map
+  texmap:
+    __class: Map
+  intmap:
+    __class: Map
+renderQueue: -1
+enabledMacros:
+  __class: Map
+  AE_AMAZING_USE_BONES: !<str> 1
+mshaderPath: ""
+instanceCount: 0

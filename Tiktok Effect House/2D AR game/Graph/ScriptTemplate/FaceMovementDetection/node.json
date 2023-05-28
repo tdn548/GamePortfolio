@@ -1,0 +1,136 @@
+{
+	"name": "Facial Movement Detection",
+	"id": "174C331B-333D-8AB7-CD2A-3D252E090E64",
+	"inputs": [
+		{
+			"name": "Detect",
+			"description": "The face to detect the movement. Face 0 represents the first face appearing in the scene, Face 4 represents the fifth face appearing in the scene. Any represents any face in the scene.",
+			"type": "String",
+			"value_list": [
+				"Face 0",
+				"Face 1",
+				"Face 2",
+				"Face 3",
+				"Face 4",
+				"Any"
+			],
+			"displayType": "String",
+			"nameKey": "graph_facial_movement_detection_input_detect",
+			"descriptionKey": "graph_facial_movement_detection_input_detect_description",
+			"displayTypeKey": "graph_type_string",
+			"value_list_i18n_keys": [
+				"graph_facial_movement_detection_input_detect_valueList_face_0",
+				"graph_facial_movement_detection_input_detect_valueList_face_1",
+				"graph_facial_movement_detection_input_detect_valueList_face_2",
+				"graph_facial_movement_detection_input_detect_valueList_face_3",
+				"graph_facial_movement_detection_input_detect_valueList_face_4",
+				"graph_facial_movement_detection_input_detect_valueList_any"
+			]
+		},
+		{
+			"name": "Facial Movement",
+			"description": "The movement on face, including Eye Blink Left, Eye Blink Right, Eye Blink Both, Eye Blink Either, Mouth Open, Mouth Pout, Eyebrow Wiggle",
+			"type": "String",
+			"value_list": [
+				"Eye Blink Left",
+				"Eye Blink Right",
+				"Eye Blink Both",
+				"Eye Blink Either",
+				"Mouth Open",
+				"Mouth Pout",
+				"Eyebrow Wiggle"
+			],
+			"displayType": "String",
+			"nameKey": "graph_facial_movement_detection_input_facialmovement",
+			"descriptionKey": "graph_facial_movement_detection_input_facialmovement_description",
+			"displayTypeKey": "graph_type_string",
+			"value_list_i18n_keys": [
+				"graph_facial_movement_detection_input_facialmovement_valueList_eye_blink_left",
+				"graph_facial_movement_detection_input_facialmovement_valueList_eye_blink_right",
+				"graph_facial_movement_detection_input_facialmovement_valueList_eye_blink_both",
+				"graph_facial_movement_detection_input_facialmovement_valueList_eye_blink_either",
+				"graph_facial_movement_detection_input_facialmovement_valueList_mouth_open",
+				"graph_facial_movement_detection_input_facialmovement_valueList_mouth_pout",
+				"graph_facial_movement_detection_input_facialmovement_valueList_eyebrow_wiggle"
+			]
+		}
+	],
+	"outputs": [
+		{
+			"name": "Begin",
+			"description": "Execute the next node when the movement starts",
+			"type": "Pulse",
+			"displayType": "Exec",
+			"nameKey": "graph_facial_movement_detection_output_begin",
+			"descriptionKey": "graph_facial_movement_detection_output_begin_description",
+			"displayTypeKey": "graph_type_exec"
+		},
+		{
+			"name": "Stay",
+			"description": "Keep executing the next node when the movement is in progress",
+			"type": "Pulse",
+			"displayType": "Exec",
+			"nameKey": "graph_facial_movement_detection_output_stay",
+			"descriptionKey": "graph_facial_movement_detection_output_stay_description",
+			"displayTypeKey": "graph_type_exec"
+		},
+		{
+			"name": "End",
+			"description": "Execute the next node when the movement ends",
+			"type": "Pulse",
+			"displayType": "Exec",
+			"nameKey": "graph_facial_movement_detection_output_end",
+			"descriptionKey": "graph_facial_movement_detection_output_end_description",
+			"displayTypeKey": "graph_type_exec"
+		},
+		{
+			"name": "None",
+			"description": "Keep executing the next node when no movement is on the certain face or the certain face is not detected",
+			"type": "Pulse",
+			"displayType": "Exec",
+			"nameKey": "graph_facial_movement_detection_output_none",
+			"descriptionKey": "graph_facial_movement_detection_output_none_description",
+			"displayTypeKey": "graph_type_exec"
+		}
+	],
+	"js": "CGFaceMovementDetection.js",
+	"nodeEvent": "onUpdate",
+	"category": "Head & Face",
+	"description": "Detect the movement on face. Each movement has four states: Begin, Stay, End, and None. For movement such as eye blink, even the fastest blink has one frame \"Stay\" state. To detect facial movement more than one face, assign a Face Movement Detection node to each face in the scene. It can detect up to five facial movements.",
+	"productTypes": [
+		"EHO",
+		"EHD",
+		"EHI"
+	],
+	"graphAlgorithms": [
+		"faceDetect"
+	],
+	"extraAlgorithms": [
+		{
+			"port": 1,
+			"values": [
+				"Eye Blink Left",
+				"Eye Blink Right",
+				"Eye Blink Both",
+				"Eye Blink Either"
+			],
+			"algorithms": [
+				"faceDetectBlink"
+			]
+		},
+		{
+			"port": 1,
+			"values": [
+				"Mouth Pout"
+			],
+			"algorithms": [
+				"faceDetectDuMouth"
+			]
+		}
+	],
+	"version": "1.0.1",
+	"onlineWebsite": "graph_facial_movement_detection_website",
+	"nameKey": "graph_facial_movement_detection_name",
+	"categoryKey": "graph_category_headface",
+	"descriptionKey": "graph_facial_movement_detection_description"
+}

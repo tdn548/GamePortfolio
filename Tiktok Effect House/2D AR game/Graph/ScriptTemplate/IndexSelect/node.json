@@ -1,0 +1,87 @@
+{
+	"name": "Select",
+	"id": "ED640EBF-793B-192F-88F6-C89E94204E36",
+	"inputs": [
+		{
+			"name": "Index",
+			"description": "The input rounded value, controlling which item to be selected. For example, if the input is 1.4, it will be rounded to 1, if it is 1.5, it will be 2.",
+			"type": "Int",
+			"displayType": "Number",
+			"nameKey": "graph_select_input_index",
+			"descriptionKey": "graph_select_input_index_description",
+			"displayTypeKey": "graph_type_number"
+		},
+		{
+			"name": "Item 0",
+			"type": "Double",
+			"dynamic": true,
+			"description": "The first item, which will be selected when Index is 0",
+			"displayType": "Number",
+			"nameKey": "graph_select_input_item0",
+			"descriptionKey": "graph_select_input_item0_description",
+			"displayTypeKey": "graph_type_number"
+		},
+		{
+			"name": "Item 1",
+			"type": "Double",
+			"dynamic": true,
+			"description": "The second item, which will be selected when Index is 1",
+			"displayType": "Number",
+			"nameKey": "graph_select_input_item1",
+			"descriptionKey": "graph_select_input_item1_description",
+			"displayTypeKey": "graph_type_number"
+		},
+		{
+			"name": "Item 2",
+			"type": "Double",
+			"dynamic": true,
+			"description": "The third item, which will be selected when Index is 2",
+			"displayType": "Number",
+			"nameKey": "graph_select_input_item2",
+			"descriptionKey": "graph_select_input_item2_description",
+			"displayTypeKey": "graph_type_number"
+		}
+	],
+	"outputs": [
+		{
+			"name": "Item",
+			"type": "Double",
+			"dynamic": true,
+			"description": "The selected item according to the input index",
+			"displayType": "Number",
+			"nameKey": "graph_select_output_item",
+			"descriptionKey": "graph_select_output_item_description",
+			"displayTypeKey": "graph_type_number"
+		}
+	],
+	"category": "Utility",
+	"description": "Select an item to output according to the input index. You can click \"+\" to add more items. Supported types: Number, Vec2, Vec3, Vec4, String, Color, Texture 2D, Rect, and Material.",
+	"productTypes": [
+		"EHO",
+		"EHD",
+		"EHI"
+	],
+	"js": "CGIndexSelect.js",
+	"addableInput": {
+		"index": 3,
+		"baseName": "Item ",
+		"baseNameKey": "graph_port_addable_item",
+		"increaseStartIndex": 3
+	},
+	"supportedValueTypes": [
+		"Double",
+		"Vector2f",
+		"Vector3f",
+		"Vector4f",
+		"String",
+		"Color",
+		"Texture2D",
+		"Rect",
+		"Material"
+	],
+	"version": "1.0.1",
+	"onlineWebsite": "graph_select_website",
+	"nameKey": "graph_select_name",
+	"categoryKey": "graph_category_utility",
+	"descriptionKey": "graph_select_description"
+}

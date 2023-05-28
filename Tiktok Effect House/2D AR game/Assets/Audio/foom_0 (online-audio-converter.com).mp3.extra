@@ -1,0 +1,17 @@
+[
+  {
+    "guid": {
+      "a": "08cad19a-581e-c5d9-1f8c-fe20b34dace1",
+      "b": ""
+    },
+    "extraType": "ResItemMP3",
+    "name": "foom_0 (online-audio-converter.com)",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "AudioClip",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "mccState": "SUCCESS"
+  }
+]

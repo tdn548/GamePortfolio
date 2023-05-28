@@ -1,0 +1,27 @@
+[
+  {
+    "guid": {
+      "a": "3f8dd1f0-288c-4a3b-2655-e969205a03dc",
+      "b": ""
+    },
+    "extraType": "ResItemPNGImage",
+    "name": "foreground [REPLACE ME]",
+    "expandInPanel": true,
+    "objGuid": "",
+    "rttiType": "Texture2D",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "compressionType": 0,
+    "quality": 0,
+    "maxResolution": 512,
+    "enableMipmap": false,
+    "filterMin": 1,
+    "filterMag": 1,
+    "filterMipmap": 0,
+    "wrapModeS": 1,
+    "wrapModeT": 1,
+    "wrapModeR": 1,
+    "premultiplyAlpha": true
+  }
+]

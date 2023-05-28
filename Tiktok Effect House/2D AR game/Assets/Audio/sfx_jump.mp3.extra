@@ -1,0 +1,17 @@
+[
+  {
+    "guid": {
+      "a": "c7720466-6066-47f9-301b-5da37677d34e",
+      "b": ""
+    },
+    "extraType": "ResItemMP3",
+    "name": "sfx_jump",
+    "expandInPanel": false,
+    "objGuid": "",
+    "rttiType": "AudioClip",
+    "version": "0.1.0",
+    "isVisibleInInspector": true,
+    "hideInPanel": false,
+    "mccState": "SUCCESS"
+  }
+]

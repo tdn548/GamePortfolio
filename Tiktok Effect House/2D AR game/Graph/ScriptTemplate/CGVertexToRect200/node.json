@@ -1,0 +1,54 @@
+{
+	"name": "Vertex to Rect",
+	"id": "356cc8f5-4162-f81a-5b6f-3ba91326ed1f",
+	"inputs": [
+		{
+			"name": "Top left",
+			"type": "Vector2f",
+			"item_type": "",
+			"description": "The vertex pixel position of the rectangle's top left corner",
+			"displayType": "Vec2"
+		},
+		{
+			"name": "Top right",
+			"type": "Vector2f",
+			"item_type": "",
+			"description": "The vertex pixel position of the rectangle's top right corner",
+			"displayType": "Vec2"
+		},
+		{
+			"name": "Bottom left",
+			"type": "Vector2f",
+			"item_type": "",
+			"description": "The vertex pixel position of the rectangle's bottom left corner",
+			"displayType": "Vec2"
+		},
+		{
+			"name": "Bottom right",
+			"type": "Vector2f",
+			"item_type": "",
+			"description": "The vertex pixel position of the rectangle's bottom right corner",
+			"displayType": "Vec2"
+		}
+	],
+	"outputs": [
+		{
+			"name": "New Rect",
+			"type": "Rect",
+			"item_type": "",
+			"description": "The generated rectangle",
+			"displayType": "Rect"
+		}
+	],
+	"js": "CGVertexToRect.js",
+	"lua": "CGVertexToRect.lua",
+	"version": "1.0",
+	"category": "Utility",
+	"description": "Create a rectangle by specifying its 4 corners positions.",
+	"productTypes": [
+		"InHouse",
+		"Domestic",
+		"TTEH"
+	],
+	"TTEHVer": "2.0.0"
+}

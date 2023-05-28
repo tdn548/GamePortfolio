@@ -1,0 +1,19 @@
+%YAML 1.1
+--- !TextureSequence &1
+name: Texture Sequence
+guid: {a: 4896781700077169758, b: 13360076895541043896}
+assettype:
+  __class: TexSeqAssetType
+  value: image
+lazyload: true
+cache: false
+atlases:
+  - {localId: 1, path: c00fa324-bc24-4731-fc63-1fd476bff5c2--0.imageatlas}
+  - {localId: 1, path: c00fa324-bc24-4731-fc63-1fd476bff5c2--1.imageatlas}
+  - {localId: 1, path: c00fa324-bc24-4731-fc63-1fd476bff5c2--2.imageatlas}
+  - {localId: 1, path: c00fa324-bc24-4731-fc63-1fd476bff5c2--3.imageatlas}
+memoryLimit: 0
+preload: true
+indexAction:
+  __class: Map
+preloadCount: 5
